@@ -18,14 +18,30 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       
+      - name: Determine working directory
+        id: dirs
+        run: |
+          if [ -d "ai-version-1" ]; then
+            echo "dir=ai-version-1" >> $GITHUB_OUTPUT
+          elif [ -d "ai-version-2" ]; then
+            echo "dir=ai-version-2" >> $GITHUB_OUTPUT
+          elif [ -d "ai-version-3" ]; then
+            echo "dir=ai-version-3" >> $GITHUB_OUTPUT
+          else
+            echo "dir=." >> $GITHUB_OUTPUT
+          fi
+      
       - name: Restore dependencies
         run: dotnet restore tests/Module.Tests/Module.Tests.csproj
+        working-directory: ${{ steps.dirs.outputs.dir }}
       
       - name: Build
         run: dotnet build tests/Module.Tests/Module.Tests.csproj --no-restore
+        working-directory: ${{ steps.dirs.outputs.dir }}
       
       - name: Test
         run: dotnet test tests/Module.Tests/Module.Tests.csproj --no-build --verbosity normal --logger "console;verbosity=detailed"
+        working-directory: ${{ steps.dirs.outputs.dir }}
       
       - name: Publish Test Results
         uses: actions/upload-artifact@v3
