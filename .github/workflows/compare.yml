@@ -6,6 +6,9 @@ jobs:
   test-ai-v1:
     name: Test AI Version 1 (Qwen)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ai-version-1
     steps:
       - uses: actions/checkout@v3
         with: 
@@ -26,6 +29,9 @@ jobs:
   test-ai-v2:
     name: Test AI Version 2 (DeepSeek)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ai-version-2
     steps:
       - uses: actions/checkout@v3
         with: 
@@ -46,6 +52,9 @@ jobs:
   test-ai-v3:
     name: Test AI Version 3 (GigaChat)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ai-version-3
     steps:
       - uses: actions/checkout@v3
         with: 
