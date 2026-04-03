@@ -12,16 +12,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0.x'
+      
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore tests/Module.Tests/Module.Tests.csproj
+      
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet build tests/Module.Tests/Module.Tests.csproj --no-restore
+      
       - name: Test
-        run: dotnet test --no-build --verbosity normal --logger "console;verbosity=detailed"
+        run: dotnet test tests/Module.Tests/Module.Tests.csproj --no-build --verbosity normal --logger "console;verbosity=detailed"
+      
       - name: Publish Test Results
         uses: actions/upload-artifact@v3
         if: always()
