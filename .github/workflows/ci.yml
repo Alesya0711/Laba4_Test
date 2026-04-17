@@ -25,7 +25,6 @@ jobs:
       # ШАГ 2: Генерация тестов (в папке ai-version-1)
       - name: Generate NUnit tests
         run: python generator/gen_tests.py --config config.yaml
-        working-directory: ai-version-1
       
       # ШАГ 3: Настройка .NET
       - name: Setup .NET
