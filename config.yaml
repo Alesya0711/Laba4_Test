@@ -1,5 +1,0 @@
-target_language: csharp
-test_framework: nunit
-spec_path: spec/jsonpathextractor.yaml
-output_dir: tests/Module.Tests
-target_namespace: Module.Core
