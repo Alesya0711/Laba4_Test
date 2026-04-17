@@ -1,0 +1,51 @@
+module: JsonPathExtractor
+non_functional_requirements:
+  - id: NFR-1
+    desc: "Парсинг без сторонних библиотек"
+  - id: NFR-2
+    desc: "Корректная обработка null, пустых строк и граничных случаев"
+
+methods:
+  - name: ExtractValue
+    req_functional: ["1", "2", "3", "4", "5", "6", "7"]
+    req_non_functional: ["NFR-1", "NFR-2"]
+    signature: "string? ExtractValue(string json, string path)"
+    pre: "json != null && path != null && !string.IsNullOrWhiteSpace(json) && !string.IsNullOrWhiteSpace(path)"
+    post: "Возвращает извлечённое значение без кавычек или null, если путь не найден/вход некорректен"
+    equivalence_classes:
+      - case: "Простой ключ"
+        inputs: ['{"name":"John"}', '$.name']
+        expected: "John"
+      - case: "Вложенный ключ"
+        inputs: ['{"user":{"name":"Alice"}}', '$.user.name']
+        expected: "Alice"
+      - case: "Ключ не найден"
+        inputs: ['{"name":"John"}', '$.age']
+        expected: "null"
+      - case: "Null JSON"
+        inputs: ["null", '$.name']
+        expected: "null"
+      - case: "Пустой path"
+        inputs: ['{"a":1}', '']
+        expected: "null"
+      - case: "Числовое значение"
+        inputs: ['{"count": 100}', '$.count']
+        expected: "100"
+      - case: "Булево значение"
+        inputs: ['{"active": true}', '$.active']
+        expected: "true"
+      - case: "Одинаковые ключи на разных уровнях"
+        inputs: ['{"data":{"id": 1},"id": 2}', '$.data.id']
+        expected: "1"
+      - case: "Последний ключ без запятой"
+        inputs: ['{"last":"value"}', '$.last']
+        expected: "value"
+      - case: "Глубокая вложенность"
+        inputs: ['{"a":{"b":{"c":{"d":"deep"}}}}', '$.a.b.c.d']
+        expected: "deep"
+      - case: "Пустое значение"
+        inputs: ['{"key":""}', '$.key']
+        expected: ""
+      - case: "Null значение в JSON"
+        inputs: ['{"data": null}', '$.data']
+        expected: "null"

@@ -13,7 +13,7 @@ namespace Module.Tests
 {{
     [TestFixture]
     [Description("Сгенерированные тесты для {module}")]           
-    public class {module}Tests 
+    public class {module}Tests        
     {{
         private IJsonPathExtractor _sut;           
 
