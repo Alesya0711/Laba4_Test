@@ -11,41 +11,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
+      # ШАГ 1: Настройка Python для генератора
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install pyyaml
+      
+      # ШАГ 2: Генерация тестов (в папке ai-version-1)
+      - name: Generate NUnit tests
+        run: python generator/gen_tests.py --config config.yaml
+        working-directory: ai-version-1
+      
+      # ШАГ 3: Настройка .NET
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
       
-      - name: Determine working directory
-        id: dirs
-        run: |
-          if [ -d "ai-version-1" ]; then
-            echo "dir=ai-version-1" >> $GITHUB_OUTPUT
-          elif [ -d "ai-version-2" ]; then
-            echo "dir=ai-version-2" >> $GITHUB_OUTPUT
-          elif [ -d "ai-version-3" ]; then
-            echo "dir=ai-version-3" >> $GITHUB_OUTPUT
-          else
-            echo "dir=." >> $GITHUB_OUTPUT
-          fi
-      
+      # ШАГ 4: Восстановление зависимостей
       - name: Restore dependencies
-        run: dotnet restore tests/Module.Tests/Module.Tests.csproj
-        working-directory: ${{ steps.dirs.outputs.dir }}
+        run: dotnet restore
       
+      # ШАГ 5: Сборка
       - name: Build
-        run: dotnet build tests/Module.Tests/Module.Tests.csproj --no-restore
-        working-directory: ${{ steps.dirs.outputs.dir }}
+        run: dotnet build --no-restore --configuration Release
       
+      # ШАГ 6: Запуск тестов
       - name: Test
-        run: dotnet test tests/Module.Tests/Module.Tests.csproj --no-build --verbosity normal --logger "console;verbosity=detailed"
-        working-directory: ${{ steps.dirs.outputs.dir }}
+        run: dotnet test --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
       
+      # ШАГ 7: Публикация результатов
       - name: Publish Test Results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: nunit-test-results-${{ github.ref_name }}
-          path: '**/*.trx'
+          path: |
+            ai-version-1/tests/Module.Tests/TestResults/
+            ai-version-1/tests/Module.Tests/*.trx
