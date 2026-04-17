@@ -44,7 +44,7 @@ jobs:
         working-directory: ${{ steps.dirs.outputs.dir }}
       
       - name: Publish Test Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: nunit-test-results-${{ github.ref_name }}
