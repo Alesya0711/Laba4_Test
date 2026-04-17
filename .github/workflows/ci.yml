@@ -40,15 +40,14 @@ jobs:
         uses: actions/setup-dotnet@v4
         with: { dotnet-version: '8.0.x' }
 
-      # 5. Сборка и тесты (в нужной папке)
+          # 5. Восстановление зависимостей и сборка
       - name: Restore & Build
         run: |
-          dotnet restore
-          dotnet build --no-restore --configuration Release
-        working-directory: ${{ steps.set-dir.outputs.dir }}
-
-      - name: Run Tests
-        run: dotnet test --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+          # Восстанавливаем зависимости для тестового проекта
+          dotnet restore tests/Module.Tests/Module.Tests.csproj
+          
+          # Собираем тестовый проект
+          dotnet build tests/Module.Tests/Module.Tests.csproj --no-restore --configuration Release
         working-directory: ${{ steps.set-dir.outputs.dir }}
 
       # 6. Загрузка результатов
