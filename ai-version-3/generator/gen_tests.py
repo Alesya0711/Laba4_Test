@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
 # generator/gen_tests.py
-"""
-Генератор параметризованных NUnit-тестов на основе YAML-спецификации.
-Читает формальное описание, преобразует классы эквивалентности в [TestCase],
-генерирует структуру Arrange-Act-Assert и сохраняет файл в указанный каталог.
-
-Зависимости: pyyaml (pip install pyyaml)
-"""
 
 import yaml
 import argparse
@@ -25,7 +18,7 @@ TEST_FILE_TEMPLATE = """// =====================================================
 // =============================================================
 using System;
 using NUnit.Framework;
-using Lab.Interfaces;
+using Module.Core; 
 using {namespace};
 
 namespace Module.Tests
@@ -72,11 +65,13 @@ def load_spec(spec_path: str) -> Dict[str, Any]:
         return yaml.safe_load(f)
 
 def format_csharp_input(value: Any) -> str:
-    """Преобразует значение из YAML в литерал C#."""
+    """Преобразует значение из YAML в литерал C# с правильным экранированием."""
     if value is None:
         return "null"
     if isinstance(value, str):
-        return f'"{value}"'
+        # Экранируем обратные слеши и кавычки для C#
+        escaped = value.replace("\\", "\\\\").replace("\"", "\\\"")
+        return f'"{escaped}"'
     if isinstance(value, bool):
         return "true" if value else "false"
     return str(value)
