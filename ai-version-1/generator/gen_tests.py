@@ -18,7 +18,7 @@ TEST_FILE_TEMPLATE = """// =====================================================
 // =============================================================
 using System;
 using NUnit.Framework;
-using Lab.Interfaces;
+using Module.Core; 
 using {namespace};
 
 namespace Module.Tests
