@@ -1,55 +1,60 @@
 name: .NET CI Pipeline (NUnit)
-on: 
-  push: 
+on:
+  push:
     branches: ["main", "ai-version-1", "ai-version-2", "ai-version-3"]
-  pull_request: 
-    branches: ["main"]
+  pull_request:
   workflow_dispatch:
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
       
-      # ШАГ 1: Настройка Python для генератора
+      # 1. АВТОМАТИЧЕСКИ ОПРЕДЕЛЯЕМ ПАПКУ С КОДОМ
+      - name: Set Working Directory
+        id: set-dir
+        run: |
+          BRANCH=${GITHUB_REF#refs/heads/}
+          if [[ "$BRANCH" == ai-version-* ]]; then
+            echo "dir=$BRANCH" >> $GITHUB_OUTPUT
+          else
+            echo "dir=." >> $GITHUB_OUTPUT
+          fi
+
+      # 2. Python Setup
       - name: Setup Python
         uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      
-      - name: Install dependencies
-        run: pip install pyyaml
-      
-      # ШАГ 2: Генерация тестов (в папке ai-version-1)
+        with: { python-version: '3.11' }
+      - run: pip install pyyaml
+
+      # 3. Генерация тестов (в нужной папке)
       - name: Generate NUnit tests
         run: python generator/gen_tests.py --config config.yaml
-      
-      # ШАГ 3: Настройка .NET
+        working-directory: ${{ steps.set-dir.outputs.dir }}
+
+      # 4. .NET Setup
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-      
-      # ШАГ 4: Восстановление зависимостей
-      - name: Restore dependencies
-        run: dotnet restore
-      
-      # ШАГ 5: Сборка
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
-      
-      # ШАГ 6: Запуск тестов
-      - name: Test
+        with: { dotnet-version: '8.0.x' }
+
+      # 5. Сборка и тесты (в нужной папке)
+      - name: Restore & Build
+        run: |
+          dotnet restore
+          dotnet build --no-restore --configuration Release
+        working-directory: ${{ steps.set-dir.outputs.dir }}
+
+      - name: Run Tests
         run: dotnet test --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
-      
-      # ШАГ 7: Публикация результатов
-      - name: Publish Test Results
-        uses: actions/upload-artifact@v4
+        working-directory: ${{ steps.set-dir.outputs.dir }}
+
+      # 6. Загрузка результатов
+      - name: Upload Test Results
         if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: nunit-test-results-${{ github.ref_name }}
+          name: test-results-${{ steps.set-dir.outputs.dir }}
           path: |
-            ai-version-1/tests/Module.Tests/TestResults/
-            ai-version-1/tests/Module.Tests/*.trx
+            ${{ steps.set-dir.outputs.dir }}/tests/Module.Tests/TestResults/
+            ${{ steps.set-dir.outputs.dir }}/tests/Module.Tests/*.trx
